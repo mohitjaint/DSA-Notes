@@ -1,29 +1,148 @@
-# Number of Provinces — DSU / Union Find
+# Number of Provinces
 
 Problem : [LeetCode - Number of Provinces](https://leetcode.com/problems/number-of-provinces/description/?utm_source=chatgpt.com)
 
 ---
 
-# Core Idea
+# Problem Idea
 
-Each city initially belongs to its own component.
+Given:
 
-If:
+- adjacency matrix of an undirected graph
+
+Need to find:
 
 ```txt id="m8q2p5"
-isConnected[i][j] == 1
+number of connected components
 ```
 
-then:
+Each connected component = one province.
 
-- both cities belong to same province
-- merge their components.
+---
+
+# Approach 1 — DFS
+
+---
+
+# Core Idea
+
+Start DFS from every unvisited node.
+
+Each DFS traversal visits:
+
+- one complete connected component/province.
+
+---
+
+# DFS Logic
+
+```cpp id="x5m1q7"
+dfs(node)
+```
+
+marks:
+
+- all reachable nodes as visited.
+
+---
+
+# DFS Template
+
+```cpp id="u4m7q1"
+class Solution {
+public:
+
+    void dfs(vector<vector<int>>& m,
+             int node,
+             vector<int>& vis){
+
+        vis[node] = 1;
+
+        for(int i = 0; i < m.size(); i++){
+
+            if(m[node][i] == 1 &&
+               !vis[i]){
+
+                dfs(m, i, vis);
+            }
+        }
+    }
+
+    int findCircleNum(
+        vector<vector<int>>& isConnected) {
+
+        int n = isConnected.size();
+
+        vector<int> vis(n);
+
+        int cnt = 0;
+
+        for(int i = 0; i < n; i++){
+
+            if(!vis[i]){
+
+                dfs(isConnected,
+                    i,
+                    vis);
+
+                cnt++;
+            }
+        }
+
+        return cnt;
+    }
+};
+```
+
+---
+
+# DFS Complexity
+
+Adjacency matrix traversal:
+
+| Metric | Complexity               |
+| ------ | ------------------------ |
+| Time   | O(n²)                    |
+| Space  | O(n) recursion + visited |
+
+---
+
+# DFS Use Cases
+
+Best when:
+
+- graph is static
+- need traversal
+- need connected components
+- need path exploration.
+
+Examples:
+
+- Number of Provinces
+- Number of Islands
+- Flood Fill
+- Graph Traversal
+- Cycle Detection.
+
+---
+
+# Approach 2 — DSU / Union Find
+
+---
+
+# Core Idea
+
+Initially:
+
+- every node belongs to separate component.
+
+If edge exists:
+
+- merge both components.
 
 Final answer:
 
-```txt id="x5m1q7"
-number of unique connected components
-```
+- number of unique component roots.
 
 ---
 
@@ -33,7 +152,7 @@ number of unique connected components
 
 Returns:
 
-```txt id="u4m7q1"
+```txt id="k5m1q8"
 representative/root of component
 ```
 
@@ -49,9 +168,9 @@ Merges:
 
 # Path Compression
 
-```cpp id="k5m1q8"
-return parent[x] =
-       find(parent, parent[x]);
+```cpp id="r8p2m5"
+parent[x] =
+    find(parent, parent[x]);
 ```
 
 Flattens DSU tree.
@@ -60,81 +179,14 @@ Optimizes future operations.
 
 ---
 
-# Find Function
-
-```cpp id="r8p2m5"
-int find(vector<int>& parent, int x){
-
-    if(parent[x] == x)
-        return x;
-
-    return parent[x] =
-           find(parent, parent[x]);
-}
-```
-
----
-
-# Union Logic
+# DSU Template
 
 ```cpp id="n4m7q2"
-int pu = find(parent, i);
-int pv = find(parent, j);
-
-if(pu != pv)
-    parent[pu] = pv;
-```
-
-Always merge:
-
-- roots
-  NOT
-- arbitrary nodes.
-
----
-
-# Matrix Optimization
-
-Adjacency matrix is symmetric:
-
-```txt id="g2m8q4"
-isConnected[i][j]
-=
-isConnected[j][i]
-```
-
-So traverse only upper triangle:
-
-```cpp id="m5q1p7"
-for(int j = i + 1; j < n; j++)
-```
-
-Avoids duplicate unions.
-
----
-
-# Counting Provinces
-
-Find unique roots:
-
-```cpp id="x4m7q2"
-for(int i = 0; i < n; i++){
-
-    st.insert(find(parent, i));
-}
-```
-
-Size of set = number of provinces.
-
----
-
-# Complete Template
-
-```cpp id="k7q1m5"
 class Solution {
 public:
 
-    int find(vector<int>& parent, int x){
+    int find(vector<int>& parent,
+             int x){
 
         if(parent[x] == x)
             return x;
@@ -155,12 +207,17 @@ public:
 
         for(int i = 0; i < n; i++){
 
-            for(int j = i + 1; j < n; j++){
+            for(int j = i + 1;
+                j < n;
+                j++){
 
                 if(isConnected[i][j]){
 
-                    int pu = find(parent, i);
-                    int pv = find(parent, j);
+                    int pu =
+                        find(parent, i);
+
+                    int pv =
+                        find(parent, j);
 
                     if(pu != pv)
                         parent[pu] = pv;
@@ -182,7 +239,7 @@ public:
 
 ---
 
-# Complexity
+# DSU Complexity
 
 | Metric | Complexity   |
 | ------ | ------------ |
@@ -191,27 +248,100 @@ public:
 
 where:
 
-```txt id="u5m8q2"
+```txt id="g2m8q4"
 α(n)
 ```
 
 is inverse Ackermann function (almost constant).
 
+Since input itself is adjacency matrix:
+
+O(n^2)
+
+is unavoidable.
+
+---
+
+# DFS vs DSU Comparison
+
+| Feature              | DFS               | DSU              |
+| -------------------- | ----------------- | ---------------- |
+| Idea                 | Explore component | Merge components |
+| Traversal Needed     | Yes               | No               |
+| Dynamic Connectivity | Poor              | Excellent        |
+| Simpler              | ✅                | Slightly harder  |
+| Static Graphs        | Excellent         | Good             |
+| Online Queries       | Poor              | Excellent        |
+
+---
+
+# When DFS Is Better
+
+Use DFS/BFS when:
+
+- graph is static
+- need traversal/path exploration
+- need component counting once.
+
+Examples:
+
+- Flood fill
+- Number of islands
+- Province counting
+- Maze traversal.
+
+---
+
+# When DSU Is Better
+
+Use DSU when:
+
+- edges added dynamically
+- repeated connectivity queries
+- frequent component merging.
+
+Examples:
+
+- Kruskal MST
+- Accounts Merge
+- Number of Islands II
+- Dynamic friend networks.
+
 ---
 
 # Important Insight
 
-DSU is used for:
+## DFS Thinking
 
-```txt id="x2q8m4"
-dynamic connected components
+```txt id="m5q1p7"
+“Explore connected region.”
 ```
 
-Very important graph pattern.
+---
+
+## DSU Thinking
+
+```txt id="x4m7q2"
+“Maintain component structure.”
+```
+
+Both are fundamental graph paradigms.
 
 ---
 
 # Common Mistakes
+
+## DFS
+
+❌ Forgetting visited array.
+
+---
+
+❌ Traversing incomplete neighbors.
+
+---
+
+## DSU
 
 ❌ Unioning arbitrary nodes instead of roots.
 
@@ -221,16 +351,4 @@ Very important graph pattern.
 
 ---
 
-❌ Traversing full symmetric matrix unnecessarily.
-
----
-
-# Pattern Recognition
-
-DSU is commonly used in:
-
-- connected components
-- cycle detection
-- Kruskal’s algorithm
-- dynamic connectivity
-- grouping/merging problems.
+❌ Not understanding representative/root concept.
