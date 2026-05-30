@@ -1,0 +1,374 @@
+# Floyd-Warshall Algorithm
+
+---
+
+# When to Use?
+
+Use Floyd-Warshall when the problem asks:
+
+```txt
+Shortest distance between every pair of vertices
+```
+
+This is called:
+
+```txt
+All-Pairs Shortest Path (APSP)
+```
+
+---
+
+# Key Idea
+
+Suppose we want:
+
+```txt
+dist[i][j]
+```
+
+Initially:
+
+```txt
+Only direct edges are allowed.
+```
+
+Then we gradually allow vertices as intermediate nodes.
+
+For every vertex:
+
+```txt
+k = 0, 1, 2, ..., V-1
+```
+
+ask:
+
+```txt
+Can going through k give a shorter path?
+```
+
+---
+
+# Recurrence
+
+For every:
+
+```txt
+i → j
+```
+
+try:
+
+```txt
+i → k → j
+```
+
+Update:
+
+dist[i][j]=\min(dist[i][j],;dist[i][k]+dist[k][j])
+
+---
+
+# Initialization
+
+In this GFG problem:
+
+```txt
+-1 = No Path
+```
+
+Convert:
+
+```txt
+-1 → INF
+```
+
+before running Floyd-Warshall.
+
+```cpp
+for(int i = 0; i < n; i++) {
+    for(int j = 0; j < n; j++) {
+
+        if(matrix[i][j] == -1)
+            matrix[i][j] = INF;
+
+        if(i == j)
+            matrix[i][j] = 0;
+    }
+}
+```
+
+---
+
+# Main Algorithm
+
+```cpp
+for(int k = 0; k < n; k++) {
+
+    for(int i = 0; i < n; i++) {
+
+        for(int j = 0; j < n; j++) {
+
+            if(matrix[i][k] != INF &&
+               matrix[k][j] != INF) {
+
+                matrix[i][j] =
+                    min(
+                        matrix[i][j],
+                        matrix[i][k] + matrix[k][j]
+                    );
+            }
+        }
+    }
+}
+```
+
+---
+
+# Convert Back
+
+After completion:
+
+```txt
+INF = Unreachable
+```
+
+Convert back:
+
+```txt
+INF → -1
+```
+
+```cpp
+for(int i = 0; i < n; i++) {
+    for(int j = 0; j < n; j++) {
+
+        if(matrix[i][j] == INF)
+            matrix[i][j] = -1;
+    }
+}
+```
+
+---
+
+# Why Does It Work?
+
+After processing:
+
+```txt
+k = 0
+```
+
+paths may use:
+
+```txt
+vertex 0
+```
+
+as an intermediate.
+
+After processing:
+
+```txt
+k = 1
+```
+
+paths may use:
+
+```txt
+vertices {0,1}
+```
+
+as intermediates.
+
+...
+
+After processing:
+
+```txt
+k = n-1
+```
+
+paths may use:
+
+```txt
+all vertices
+```
+
+as intermediates.
+
+Thus every possible path has been considered.
+
+---
+
+# Example
+
+Graph:
+
+```txt
+0 --3--> 1
+1 --2--> 2
+0 --10-> 2
+```
+
+Initially:
+
+```txt
+dist[0][2] = 10
+```
+
+When:
+
+```txt
+k = 1
+```
+
+we discover:
+
+```txt
+0 → 1 → 2
+```
+
+Cost:
+
+```txt
+3 + 2 = 5
+```
+
+Update:
+
+```txt
+dist[0][2] = 5
+```
+
+---
+
+# Negative Cycle Detection
+
+After Floyd-Warshall:
+
+Check diagonal:
+
+```cpp
+for(int i = 0; i < n; i++) {
+    if(matrix[i][i] < 0) {
+        // Negative cycle exists
+    }
+}
+```
+
+Why?
+
+A negative cycle allows:
+
+```txt
+node → cycle → node
+```
+
+with negative total cost.
+
+So:
+
+```txt
+dist[i][i]
+```
+
+becomes negative.
+
+---
+
+# Complexity
+
+Three nested loops:
+
+Time:
+
+O(V^3)
+
+Space:
+
+O(1)
+
+(In-place updates on the matrix)
+
+---
+
+# Comparison with Other Shortest Path Algorithms
+
+| Problem Type            | Algorithm        |
+| ----------------------- | ---------------- |
+| Unweighted Graph        | BFS              |
+| DAG Shortest Path       | Topological Sort |
+| Positive Weights        | Dijkstra         |
+| Negative Weights        | Bellman-Ford     |
+| All-Pairs Shortest Path | Floyd-Warshall   |
+
+---
+
+# Pattern Recognition
+
+### If problem asks:
+
+```txt
+Shortest path from one source
+```
+
+Think:
+
+```txt
+Dijkstra / Bellman-Ford
+```
+
+---
+
+### If problem asks:
+
+```txt
+Shortest path between every pair
+```
+
+Think:
+
+```txt
+Floyd-Warshall
+```
+
+---
+
+# Key Takeaways
+
+1. Floyd-Warshall solves **All-Pairs Shortest Path**.
+2. Core recurrence:
+
+dist[i][j]=\min(dist[i][j],dist[i][k]+dist[k][j])
+
+3. Convert:
+
+```txt
+-1 → INF
+```
+
+before processing.
+
+4. Set:
+
+```txt
+dist[i][i] = 0
+```
+
+for all vertices.
+
+5. Negative cycle exists if:
+
+dist[i][i]<0
+
+for any vertex.
+
+6. Complexity:
+
+O(V^3)
+
+which is why Floyd-Warshall is usually used only when:
+
+```txt
+V ≲ 500
+```
